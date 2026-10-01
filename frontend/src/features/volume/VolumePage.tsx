@@ -10,15 +10,16 @@ import { NumCell, PctCell } from '../../components/ui/cells'
 import { useUrlNumber } from '../../hooks/useUrlState'
 import { applyMarketFilters } from '../../lib/filters'
 import { formatMultiplier, formatNumber, formatUsdCompact } from '../../lib/format'
-import { SCANNER_INTERVALS, intervalLabel } from '../../lib/intervals'
+import { intervalLabel } from '../../lib/intervals'
 import { change24hColumn, priceColumn, symbolColumn, volume24hColumn } from '../shared/columns'
 import { IntervalControl } from '../shared/IntervalControl'
-import { useMarketFilters, useScannerInterval } from '../shared/useMarketFilters'
+import { useMarketFilters, useScannerInterval, useScannerIntervals } from '../shared/useMarketFilters'
 
 const MIN_RATIO_OPTIONS = [0, 1.5, 2, 3, 5] as const
 
 export default function VolumePage() {
   const [interval, changeInterval] = useScannerInterval()
+  const intervals = useScannerIntervals()
   const [minRatio, setMinRatio] = useUrlNumber('x', 0, MIN_RATIO_OPTIONS)
   const { search, setSearch, minVolume, setMinVolume, filters } = useMarketFilters()
   const query = useScanner(interval)
@@ -91,7 +92,7 @@ export default function VolumePage() {
         onRefresh={() => void query.refetch()}
       />
       <FilterBar>
-        <IntervalControl value={interval} options={SCANNER_INTERVALS} onChange={changeInterval} />
+        <IntervalControl value={interval} options={intervals} onChange={changeInterval} />
         <SearchInput value={search} onChange={setSearch} />
         <MinVolumeSelect value={minVolume} onChange={setMinVolume} />
         <SelectField

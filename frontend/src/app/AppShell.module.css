@@ -2,6 +2,21 @@
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
+  /* Switching between futures and Alpha mounts a new shell; this makes it feel like entering another site. */
+  animation: shell-enter 0.35s ease-out;
+}
+
+@keyframes shell-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Binance Alpha section: its own accent, so it is obvious which market is on screen. */
+.shell[data-market='alpha'] {
+  --accent: #8b5cf6;
+  --accent-text: #ffffff;
 }
 
 .skipLink {
@@ -50,6 +65,41 @@
 
 .brand strong {
   color: var(--accent);
+}
+
+.brandTag {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Jump between the futures site and the Alpha (Web3) site, coloured after its destination. */
+.switch {
+  --to: #f0b90b;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--to) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--to) 12%, transparent);
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.switch[data-to='alpha'] {
+  --to: #8b5cf6;
+}
+
+.switch:hover {
+  background: color-mix(in srgb, var(--to) 22%, transparent);
 }
 
 .nav {
@@ -175,7 +225,7 @@
 @media (max-width: 900px) {
   .headerInner {
     flex-wrap: wrap;
-    gap: 0 12px;
+    gap: 0 10px;
     height: auto;
     padding: 0 var(--gutter);
   }
@@ -183,6 +233,19 @@
   .brand {
     height: 52px;
     flex: 1;
+    gap: 8px;
+  }
+
+  /* Brand, section switch and theme button share one row, even at 320px. */
+  .brandTag {
+    padding: 1px 6px;
+    font-size: 10px;
+  }
+
+  .switch {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 13px;
   }
 
   .nav {
@@ -192,7 +255,33 @@
     padding: 0 var(--gutter) 8px;
   }
 
+  /*
+   * Fade over the right edge of the tabs so it is clear they scroll. An overlay
+   * rather than a mask on .nav, which would also clip the dropdown inside it.
+   */
+  .headerInner {
+    position: relative;
+  }
+
+  .headerInner::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 8px;
+    width: 40px;
+    height: 34px;
+    background: linear-gradient(to right, transparent, var(--bg));
+    pointer-events: none;
+  }
+
   .main {
     padding: 16px var(--gutter) 32px;
+  }
+}
+
+/* Smallest phones: the Alpha tag would push the theme button onto a second row; the accent colour still tells the sections apart. */
+@media (max-width: 359px) {
+  .brandTag {
+    display: none;
   }
 }

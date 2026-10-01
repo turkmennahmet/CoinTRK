@@ -1,5 +1,5 @@
 import type { Column } from '../../components/DataTable/DataTable'
-import { NumCell, PctCell, SymbolCell } from '../../components/ui/cells'
+import { AlphaSymbolCell, NumCell, PctCell, SymbolCell } from '../../components/ui/cells'
 import { formatPrice, formatUsdCompact } from '../../lib/format'
 
 interface MarketRow {
@@ -9,11 +9,25 @@ interface MarketRow {
   quote_volume_24h: number
 }
 
-export function symbolColumn<T extends { symbol: string; base_asset: string }>(): Column<T> {
+interface SymbolRow {
+  symbol: string
+  base_asset: string
+  /** Present on Binance Alpha rows. */
+  alpha_id?: string
+  name?: string
+  chain?: string
+}
+
+export function symbolColumn<T extends SymbolRow>(): Column<T> {
   return {
     id: 'symbol',
     header: 'Coin',
-    cell: (row) => <SymbolCell symbol={row.symbol} base={row.base_asset} />,
+    cell: (row) =>
+      row.alpha_id ? (
+        <AlphaSymbolCell base={row.base_asset} name={row.name ?? row.base_asset} chain={row.chain ?? ''} />
+      ) : (
+        <SymbolCell symbol={row.symbol} base={row.base_asset} />
+      ),
     sortValue: (row) => row.base_asset,
     firstSortDirection: 'asc',
   }

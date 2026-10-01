@@ -8,8 +8,8 @@ candles since the last one we have (weight 1, well under 1 KB per symbol).
 from __future__ import annotations
 
 from collections.abc import Iterable
+from typing import Protocol
 
-from app.clients.binance import BinanceClient
 from app.clients.models import Kline
 
 INTERVAL_MS: dict[str, int] = {
@@ -23,12 +23,18 @@ INTERVAL_MS: dict[str, int] = {
 MAX_INCREMENTAL_LIMIT = 99
 
 
+class KlineSource(Protocol):
+    """Anything that serves Binance-style candles: the futures and the Alpha client."""
+
+    async def klines(self, symbol: str, interval: str, limit: int) -> list[Kline]: ...
+
+
 class KlineStore:
     def __init__(self) -> None:
         self._data: dict[tuple[str, str], list[Kline]] = {}
 
     async def fetch(
-        self, client: BinanceClient, symbol: str, interval: str, limit: int, now_ms: int
+        self, client: KlineSource, symbol: str, interval: str, limit: int, now_ms: int
     ) -> list[Kline]:
         """The latest ``limit`` candles, including the one still forming."""
         key = (symbol, interval)
@@ -40,7 +46,7 @@ class KlineStore:
         return candles
 
     async def _update(
-        self, client: BinanceClient, symbol: str, interval: str, limit: int, now_ms: int, have: list[Kline]
+        self, client: KlineSource, symbol: str, interval: str, limit: int, now_ms: int, have: list[Kline]
     ) -> list[Kline] | None:
         # From our last candle (it may have been still forming) up to the current one, plus one of overlap.
         missing = (now_ms - have[-1].open_time) // INTERVAL_MS[interval] + 2

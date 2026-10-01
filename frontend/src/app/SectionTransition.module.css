@@ -1,0 +1,73 @@
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  /* Always the dark theme's background, in light mode too: the coloured title is the focus. */
+  background: #0b0e14;
+  color: var(--title);
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.7, 0, 0.3, 1);
+  animation-fill-mode: both;
+}
+
+/* Title coloured after the destination, like the switch button. */
+.panel[data-to='alpha'] {
+  --title: #8b5cf6;
+}
+
+.panel[data-to='futures'] {
+  --title: #f0b90b;
+}
+
+.panel[data-phase='in'] {
+  animation-name: slide-in;
+}
+
+.panel[data-phase='out'] {
+  animation-name: slide-out;
+}
+
+/* Drops in from the top and leaves through the bottom. */
+@keyframes slide-in {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes slide-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  animation: content-in 0.45s 0.2s ease-out both;
+}
+
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(-32px);
+  }
+}
+
+.title {
+  font-size: clamp(36px, 9vw, 80px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.subtitle {
+  color: #8b94a7;
+  font-size: 15px;
+  font-weight: 600;
+}

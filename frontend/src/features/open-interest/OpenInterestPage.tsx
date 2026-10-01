@@ -49,6 +49,7 @@ function longShortColumn(
       )
     },
     sortValue: (r) => get(r)?.long_pct ?? null,
+    mobile: 'wide',
   }
 }
 

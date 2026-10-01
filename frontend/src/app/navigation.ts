@@ -35,5 +35,18 @@ export const NAV_MENU: readonly NavEntry[] = [
   { path: '/funding', label: 'Funding', title: 'Funding Oranları' },
 ]
 
+/** The Binance Alpha (Web3) section, a separate site under /web3. */
+export const ALPHA_HOME = '/web3'
+
+export const ALPHA_NAV_MENU: readonly NavEntry[] = [
+  { path: '/web3/hacim', label: 'Hacim', title: 'Hacim Patlaması' },
+  { path: '/web3/rsi', label: 'RSI', title: 'RSI Tarayıcı' },
+  { path: '/web3/fiyat-hacim', label: 'Fiyat/Hacim', title: 'Fiyat/Hacim' },
+]
+
+const flatten = (menu: readonly NavEntry[]): readonly NavItem[] =>
+  menu.flatMap((entry) => (isNavGroup(entry) ? entry.items : [entry]))
+
 /** Every page in the menu, dropdowns flattened. */
-export const NAV_ITEMS: readonly NavItem[] = NAV_MENU.flatMap((entry) => (isNavGroup(entry) ? entry.items : [entry]))
+export const NAV_ITEMS: readonly NavItem[] = flatten(NAV_MENU)
+export const ALPHA_NAV_ITEMS: readonly NavItem[] = flatten(ALPHA_NAV_MENU)

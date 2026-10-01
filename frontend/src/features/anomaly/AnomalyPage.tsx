@@ -11,11 +11,11 @@ import { NumCell, PctCell } from '../../components/ui/cells'
 import { useUrlEnum } from '../../hooks/useUrlState'
 import { applyMarketFilters } from '../../lib/filters'
 import { formatMultiplier, formatNumber } from '../../lib/format'
-import { SCANNER_INTERVALS, intervalLabel } from '../../lib/intervals'
+import { intervalLabel } from '../../lib/intervals'
 import { change24hColumn, priceColumn, symbolColumn, volume24hColumn } from '../shared/columns'
 import { IntervalControl } from '../shared/IntervalControl'
 import { ANOMALY_LABELS } from '../shared/labels'
-import { useMarketFilters, useScannerInterval } from '../shared/useMarketFilters'
+import { useMarketFilters, useScannerInterval, useScannerIntervals } from '../shared/useMarketFilters'
 
 type TypeFilter = 'anomalies' | 'all' | AnomalyType
 const ANOMALY_TYPES = Object.keys(ANOMALY_LABELS) as AnomalyType[]
@@ -85,6 +85,7 @@ const COLUMNS: Column<ScannerRow>[] = [
 
 export default function AnomalyPage() {
   const [interval, changeInterval] = useScannerInterval()
+  const intervals = useScannerIntervals()
   const [typeFilter, setTypeFilter] = useUrlEnum<TypeFilter>('type', 'anomalies', TYPE_FILTERS)
   const { search, setSearch, minVolume, setMinVolume, filters } = useMarketFilters()
   const query = useScanner(interval)
@@ -116,7 +117,7 @@ export default function AnomalyPage() {
         ))}
       </Legend>
       <FilterBar>
-        <IntervalControl value={interval} options={SCANNER_INTERVALS} onChange={changeInterval} />
+        <IntervalControl value={interval} options={intervals} onChange={changeInterval} />
         <SearchInput value={search} onChange={setSearch} />
         <MinVolumeSelect value={minVolume} onChange={setMinVolume} />
         <SelectField

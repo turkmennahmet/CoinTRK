@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router'
 
 import { ApiError } from './api/client'
 import { router } from './app/router'
+import { SectionTransition } from './app/SectionTransition'
 import './styles/global.css'
 
 const queryClient = new QueryClient({
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <SectionTransition />
     </QueryClientProvider>
   </StrictMode>,
 )

@@ -122,6 +122,7 @@ const COLUMNS: Column<ScannerRow>[] = [
     header: 'Sinyaller',
     description: `Son ${RECENT_BARS} mumdaki uyumsuzluk ve EMA kesişimleri, son mumdaki fiyat/hacim anomalisi`,
     cell: (r) => <Signals row={r} />,
+    mobile: 'wide',
   },
   {
     id: 'trend',

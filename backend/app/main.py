@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 
 from app.config import get_settings
 from app.core.errors import AppError
-from app.routers import health, market
+from app.routers import alpha, health, market
 
 API_PREFIX = "/api"
 
@@ -60,6 +60,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(market.router, prefix=API_PREFIX)
+    app.include_router(alpha.router, prefix=API_PREFIX)
     return app
 
 

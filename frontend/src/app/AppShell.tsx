@@ -1,9 +1,20 @@
 import { Suspense, useEffect, useId, useRef, useState } from 'react'
-import { NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router'
+import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router'
 
 import { Skeleton } from '../components/ui/QueryState'
 import { useTheme, type ThemePreference } from '../hooks/useTheme'
-import { NAV_ITEMS, NAV_MENU, isNavGroup, type NavGroup, type NavItem } from './navigation'
+import { MarketContext, type Market } from './market'
+import { startSectionTransition } from './sectionSwitch'
+import {
+  ALPHA_HOME,
+  ALPHA_NAV_ITEMS,
+  ALPHA_NAV_MENU,
+  NAV_ITEMS,
+  NAV_MENU,
+  isNavGroup,
+  type NavGroup,
+  type NavItem,
+} from './navigation'
 import styles from './AppShell.module.css'
 
 const THEME_LABEL: Record<ThemePreference, string> = {
@@ -12,62 +23,120 @@ const THEME_LABEL: Record<ThemePreference, string> = {
   light: 'Tema: açık',
 }
 
-export function AppShell() {
+const SECTIONS = {
+  futures: {
+    name: 'CoinTRK',
+    home: '/',
+    menu: NAV_MENU,
+    items: NAV_ITEMS,
+    footer: "Veriler Binance USDⓈ-M Futures herkese açık API'sinden alınır. Yatırım tavsiyesi değildir.",
+  },
+  alpha: {
+    name: 'CoinTRK Alpha',
+    home: ALPHA_HOME,
+    menu: ALPHA_NAV_MENU,
+    items: ALPHA_NAV_ITEMS,
+    footer:
+      "Veriler Binance Alpha'dan (Binance Wallet Web3 tokenleri) alınır. Bu tokenler zincir üstünde işlem görür, likiditeleri düşük olabilir. Yatırım tavsiyesi değildir.",
+  },
+} as const
+
+/** The Binance Alpha section: the same shell, as a site of its own under /web3. */
+export function AlphaShell() {
+  return <AppShell market="alpha" />
+}
+
+export function AppShell({ market = 'futures' }: { market?: Market }) {
   const [theme, cycleTheme] = useTheme()
   const { pathname } = useLocation()
+  const section = SECTIONS[market]
 
   useEffect(() => {
-    const item = NAV_ITEMS.find((i) => i.path === pathname)
+    const item = section.items.find((i) => i.path === pathname)
     const coin = /^\/coin\/([^/]+)/.exec(pathname)?.[1]
     const title = item?.title ?? (coin ? decodeURIComponent(coin).toUpperCase() : null)
-    document.title = title ? `${title} · CoinTRK` : 'CoinTRK'
-  }, [pathname])
+    document.title = title ? `${title} · ${section.name}` : section.name
+  }, [pathname, section])
 
   return (
-    <div className={styles.shell}>
-      <a className={styles.skipLink} href="#main">
-        İçeriğe geç
-      </a>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <NavLink to="/" className={styles.brand} aria-label="CoinTRK ana sayfa">
-            <Logo />
-            <span>
-              Tur<strong>Coin</strong>
-            </span>
-          </NavLink>
-          <nav className={styles.nav} aria-label="Ana menü">
-            {NAV_MENU.map((entry) =>
-              isNavGroup(entry) ? (
-                <NavDropdown key={entry.label} group={entry} />
-              ) : (
-                <MenuLink key={entry.path} item={entry} className={styles.navLink} activeClassName={styles.navActive} />
-              ),
+    <MarketContext value={market}>
+      <div className={styles.shell} data-market={market}>
+        <a className={styles.skipLink} href="#main">
+          İçeriğe geç
+        </a>
+        <header className={styles.header}>
+          <div className={styles.headerInner}>
+            <NavLink to={section.home} className={styles.brand} aria-label={`${section.name} ana sayfa`}>
+              <Logo />
+              <span>
+                Coin<strong>TRK</strong>
+              </span>
+              {market === 'alpha' && <span className={styles.brandTag}>Alpha</span>}
+            </NavLink>
+            <nav className={styles.nav} aria-label="Ana menü">
+              {section.menu.map((entry) =>
+                isNavGroup(entry) ? (
+                  <NavDropdown key={entry.label} group={entry} />
+                ) : (
+                  <MenuLink key={entry.path} item={entry} className={styles.navLink} activeClassName={styles.navActive} />
+                ),
+              )}
+            </nav>
+            {market === 'alpha' ? (
+              <SectionSwitch to="futures" title="Futures / Spot tarayıcısına dön">
+                Futures/Spot
+              </SectionSwitch>
+            ) : (
+              <SectionSwitch to="alpha" title="Binance Alpha Web3 tokenlerine geç">
+                Web3 Alpha
+              </SectionSwitch>
             )}
-          </nav>
-          <button
-            type="button"
-            className={styles.themeButton}
-            onClick={cycleTheme}
-            aria-label={THEME_LABEL[theme]}
-            title={THEME_LABEL[theme]}
-          >
-            <ThemeIcon theme={theme} />
-          </button>
-        </div>
-      </header>
+            <button
+              type="button"
+              className={styles.themeButton}
+              onClick={cycleTheme}
+              aria-label={THEME_LABEL[theme]}
+              title={THEME_LABEL[theme]}
+            >
+              <ThemeIcon theme={theme} />
+            </button>
+          </div>
+        </header>
 
-      <main id="main" className={styles.main}>
-        <Suspense fallback={<Skeleton />}>
-          <Outlet />
-        </Suspense>
-      </main>
+        <main id="main" className={styles.main}>
+          <Suspense fallback={<Skeleton />}>
+            <Outlet />
+          </Suspense>
+        </main>
 
-      <footer className={styles.footer}>
-        Veriler Binance USDⓈ-M Futures herkese açık API'sinden alınır. Yatırım tavsiyesi değildir.
-      </footer>
-      <ScrollRestoration />
-    </div>
+        <footer className={styles.footer}>{section.footer}</footer>
+        <ScrollRestoration />
+      </div>
+    </MarketContext>
+  )
+}
+
+/**
+ * Link to the other section. A plain click plays the sliding transition first;
+ * modified clicks (new tab, etc.) keep their usual behaviour.
+ */
+function SectionSwitch({ to, title, children }: { to: Market; title: string; children: string }) {
+  const navigate = useNavigate()
+  const path = SECTIONS[to].home
+  return (
+    <Link
+      to={path}
+      className={styles.switch}
+      data-to={to}
+      title={title}
+      onClick={(event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+        event.preventDefault()
+        startSectionTransition(to, () => navigate(path))
+      }}
+    >
+      {children}
+    </Link>
   )
 }
 

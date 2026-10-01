@@ -11,10 +11,10 @@ import { NumCell, PctCell, RSI_OVERBOUGHT, RSI_OVERSOLD, RsiCell } from '../../c
 import { PERCENT_VALUES, useUrlRange } from '../../hooks/useUrlState'
 import { applyMarketFilters } from '../../lib/filters'
 import { formatMultiplier } from '../../lib/format'
-import { SCANNER_INTERVALS, intervalLabel } from '../../lib/intervals'
+import { intervalLabel } from '../../lib/intervals'
 import { change24hColumn, priceColumn, symbolColumn, volume24hColumn } from '../shared/columns'
 import { IntervalControl } from '../shared/IntervalControl'
-import { useMarketFilters, useScannerInterval } from '../shared/useMarketFilters'
+import { useMarketFilters, useScannerInterval, useScannerIntervals } from '../shared/useMarketFilters'
 
 const COLUMNS: Column<ScannerRow>[] = [
   symbolColumn(),
@@ -52,6 +52,7 @@ function inRange(rsi: number | null, low: number, high: number): boolean {
 
 export default function RsiPage() {
   const [interval, changeInterval] = useScannerInterval()
+  const intervals = useScannerIntervals()
   const [[low, high], setRange] = useUrlRange('lo', 'hi', [RSI_OVERSOLD, RSI_OVERBOUGHT], PERCENT_VALUES)
   const { search, setSearch, minVolume, setMinVolume, filters } = useMarketFilters()
   const query = useScanner(interval)
@@ -72,7 +73,7 @@ export default function RsiPage() {
         onRefresh={() => void query.refetch()}
       />
       <FilterBar>
-        <IntervalControl value={interval} options={SCANNER_INTERVALS} onChange={changeInterval} />
+        <IntervalControl value={interval} options={intervals} onChange={changeInterval} />
         <RangeFilter label="RSI aralığı" min={0} max={100} low={low} high={high} onApply={setRange} />
         <SearchInput value={search} onChange={setSearch} />
         <MinVolumeSelect value={minVolume} onChange={setMinVolume} />

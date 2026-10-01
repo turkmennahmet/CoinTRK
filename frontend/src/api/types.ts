@@ -82,6 +82,21 @@ export interface ScannerResponse {
   rows: ScannerRow[]
 }
 
+/** A Binance Alpha (Web3) token: the scanner row plus token data. */
+export interface AlphaScannerRow extends ScannerRow {
+  /** Trading pair the candles come from, e.g. "ALPHA_1214USDC"; `base_asset` is the token ticker. */
+  symbol: string
+  alpha_id: string
+  name: string
+  /** Chain as Binance names it, e.g. "BSC", "Solana". */
+  chain: string
+  contract_address: string
+  market_cap: number
+  liquidity: number
+  holders: number
+  listing_time: number
+}
+
 export interface FundingRow {
   symbol: string
   base_asset: string

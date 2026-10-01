@@ -185,6 +185,15 @@
   min-width: 0;
 }
 
+.cardItemWide {
+  grid-column: 1 / -1;
+}
+
+/* Let fixed-width cells (e.g. long/short bars) fill the whole row. */
+.cardItemWide dd > * {
+  width: 100%;
+}
+
 .cardItem dt {
   color: var(--text-faint);
   font-size: 11px;

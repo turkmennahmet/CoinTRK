@@ -16,9 +16,10 @@ export interface Column<T> {
   align?: 'left' | 'right'
   /**
    * Mobile card placement. The first column is always the card title.
-   * 'primary' goes top-right next to it, 'detail' into the grid below.
+   * 'primary' goes top-right next to it, 'detail' into the grid below,
+   * 'wide' into the grid on a full row of its own (for bars and other wide cells).
    */
-  mobile?: 'primary' | 'detail' | 'hidden'
+  mobile?: 'primary' | 'detail' | 'wide' | 'hidden'
 }
 
 export interface SortState {
@@ -155,7 +156,7 @@ interface MobileCardsProps<T> {
 function MobileCards<T>({ rows, columns, getRowKey, sort, onSort, footer }: MobileCardsProps<T>) {
   const [titleColumn, ...rest] = columns
   const primary = rest.filter((c) => c.mobile === 'primary')
-  const details = rest.filter((c) => (c.mobile ?? 'detail') === 'detail')
+  const details = rest.filter((c) => (c.mobile ?? 'detail') === 'detail' || c.mobile === 'wide')
   const sortable = columns.filter((c) => c.sortValue)
 
   return (
@@ -209,7 +210,10 @@ function MobileCards<T>({ rows, columns, getRowKey, sort, onSort, footer }: Mobi
             {details.length > 0 && (
               <dl className={styles.cardGrid}>
                 {details.map((column) => (
-                  <div key={column.id} className={styles.cardItem}>
+                  <div
+                    key={column.id}
+                    className={`${styles.cardItem} ${column.mobile === 'wide' ? styles.cardItemWide : ''}`}
+                  >
                     <dt>{column.header}</dt>
                     <dd>{column.cell(row)}</dd>
                   </div>

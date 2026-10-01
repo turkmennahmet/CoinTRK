@@ -54,6 +54,14 @@ class Settings:
     # openInterestHist has a separate limit of 1000 requests / 5 min per IP.
     oi_universe_size: int = field(default_factory=lambda: _env_int("OI_UNIVERSE_SIZE", 150))
 
+    # Binance Alpha (Web3 tokens) is served by binance.com's own, undocumented web
+    # API with unpublished rate limits, so it is scanned smaller and more gently.
+    alpha_base_url: str = field(
+        default_factory=lambda: os.getenv("BINANCE_ALPHA_URL", "https://www.binance.com")
+    )
+    alpha_universe_size: int = field(default_factory=lambda: _env_int("ALPHA_UNIVERSE_SIZE", 150))
+    alpha_max_concurrency: int = field(default_factory=lambda: _env_int("ALPHA_MAX_CONCURRENCY", 8))
+
     cors_origins: list[str] = field(default_factory=lambda: _env_list("CORS_ORIGINS", []))
 
 

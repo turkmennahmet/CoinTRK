@@ -8,13 +8,14 @@ import { PageHeader } from '../../components/ui/PageHeader'
 import { ErrorState, Skeleton } from '../../components/ui/QueryState'
 import { PctCell, RSI_OVERBOUGHT, RSI_OVERSOLD, RsiCell, SymbolCell } from '../../components/ui/cells'
 import { formatMultiplier, formatNumber, formatUsdCompact } from '../../lib/format'
+import { intervalLabel, spanLabel } from '../../lib/intervals'
 import { ANOMALY_LABELS, CROSS_LABELS } from '../shared/labels'
 import styles from './OverviewPage.module.css'
 import { oiChange } from '../open-interest/changes'
 import { computeBreadth, isLiquid, liquidFunding, liquidOI, OVERVIEW_MIN_VOLUME, topBy } from './summary'
 
-const INTERVAL = '1h'
-const OI_PERIOD = '4h'
+const INTERVAL = '1d'
+const OI_PERIOD = '1d'
 const RECENT_CROSS_BARS = 12
 
 export default function OverviewPage() {
@@ -35,7 +36,7 @@ export default function OverviewPage() {
     <>
       <PageHeader
         title="Ana Sayfa"
-        description={`Binance USDT perpetual piyasasında şu an öne çıkanlar. Listeler 1 saatlik mumlara göre hesaplanır ve 24 saatlik hacmi ${formatUsdCompact(OVERVIEW_MIN_VOLUME)} altındaki coinleri içermez.`}
+        description={`Binance USDT perpetual piyasasında şu an öne çıkanlar. Listeler günlük mumlara göre hesaplanır ve 24 saatlik hacmi ${formatUsdCompact(OVERVIEW_MIN_VOLUME)} altındaki coinleri içermez.`}
         generatedAt={scanner.data?.meta.generated_at}
         isFetching={scanner.isFetching || funding.isFetching || oi.isFetching}
         onRefresh={refresh}
@@ -48,7 +49,7 @@ export default function OverviewPage() {
           <Breadth rows={scannerRows} loading={scanner.isPending} />
 
           <div className={styles.grid}>
-            <Card title="Hacim Patlaması" subtitle="Son 3 mum, ortalamaya göre" to="/hacim" loading={scanner.isPending}>
+            <Card title="Hacim Patlaması" subtitle="Son 3 gün, ortalamaya göre" to={`/hacim?tf=${INTERVAL}`} loading={scanner.isPending}>
               {topBy(liquid, (r) => r.volume.window_ratio, 'desc').map((r) => (
                 <Item key={r.symbol} row={r}>
                   <span className="num" style={{ color: 'var(--warn)', fontWeight: 600 }}>
@@ -58,7 +59,7 @@ export default function OverviewPage() {
               ))}
             </Card>
 
-            <Card title="Fiyat/Hacim" subtitle="En güçlü fiyat/hacim sapmaları" to="/fiyat-hacim" loading={scanner.isPending}>
+            <Card title="Fiyat/Hacim" subtitle="En güçlü fiyat/hacim sapmaları" to={`/fiyat-hacim?tf=${INTERVAL}`} loading={scanner.isPending}>
               {topBy(liquid, (r) => r.anomaly.score, 'desc', 5, (r) => r.anomaly.type !== null).map((r) => (
                 <Item key={r.symbol} row={r}>
                   <Badge tone={ANOMALY_LABELS[r.anomaly.type!].tone}>{ANOMALY_LABELS[r.anomaly.type!].label}</Badge>
@@ -69,8 +70,8 @@ export default function OverviewPage() {
 
             <Card
               title="Yeni Kesişimler"
-              subtitle={`EMA 50/200, son ${RECENT_CROSS_BARS} saat`}
-              to="/golden-cross?tf=1h&ma=ema&type=all&within=20"
+              subtitle={`EMA 50/200, son ${RECENT_CROSS_BARS} gün`}
+              to={`/golden-cross?tf=${INTERVAL}&ma=ema&type=all&within=20`}
               loading={scanner.isPending}
             >
               {topBy(
@@ -82,12 +83,12 @@ export default function OverviewPage() {
               ).map((r) => (
                 <Item key={r.symbol} row={r}>
                   <Badge tone={CROSS_LABELS[r.ma.ema_cross!.type].tone}>{CROSS_LABELS[r.ma.ema_cross!.type].label}</Badge>
-                  <span className="num muted">{r.ma.ema_cross!.bars_ago + 1}s</span>
+                  <span className="num muted">{spanLabel(r.ma.ema_cross!.bars_ago + 1, INTERVAL)}</span>
                 </Item>
               ))}
             </Card>
 
-            <Card title="Aşırı Satım" subtitle={`En düşük RSI (≤${RSI_OVERSOLD} bölgesi)`} to="/rsi?lo=0&hi=30" loading={scanner.isPending}>
+            <Card title="Aşırı Satım" subtitle={`En düşük RSI (≤${RSI_OVERSOLD} bölgesi)`} to={`/rsi?tf=${INTERVAL}&lo=0&hi=30`} loading={scanner.isPending}>
               {topBy(liquid, (r) => r.rsi, 'asc').map((r) => (
                 <Item key={r.symbol} row={r}>
                   <RsiCell value={r.rsi} />
@@ -95,7 +96,7 @@ export default function OverviewPage() {
               ))}
             </Card>
 
-            <Card title="Aşırı Alım" subtitle={`En yüksek RSI (≥${RSI_OVERBOUGHT} bölgesi)`} to="/rsi?lo=70&hi=100" loading={scanner.isPending}>
+            <Card title="Aşırı Alım" subtitle={`En yüksek RSI (≥${RSI_OVERBOUGHT} bölgesi)`} to={`/rsi?tf=${INTERVAL}&lo=70&hi=100`} loading={scanner.isPending}>
               {topBy(liquid, (r) => r.rsi, 'desc').map((r) => (
                 <Item key={r.symbol} row={r}>
                   <RsiCell value={r.rsi} />
@@ -103,7 +104,7 @@ export default function OverviewPage() {
               ))}
             </Card>
 
-            <Card title="OI En Çok Artan" subtitle="Son 4 saat" to="/open-interest" loading={oi.isPending} error={oi.error}>
+            <Card title="OI En Çok Artan" subtitle="Son 24 saat" to={`/open-interest?tf=${OI_PERIOD}`} loading={oi.isPending} error={oi.error}>
               {topBy(
                 liquidOI(oi.data?.rows ?? [], scannerRows),
                 (r) => oiChange(r, OI_PERIOD),
@@ -160,12 +161,12 @@ function Breadth({ rows, loading }: { rows: readonly ScannerRow[]; loading: bool
       hint: pctUp != null ? `Coinlerin %${formatNumber(pctUp, 0)}'i yükselişte` : '',
     },
     {
-      label: 'EMA200 üstünde (1s)',
+      label: `EMA200 üstünde (${intervalLabel(INTERVAL)})`,
       value: pctAbove != null ? `%${formatNumber(pctAbove, 0)}` : '—',
       hint: `${b.aboveSlowEma} / ${b.withSlowEma} coin`,
     },
     {
-      label: 'Medyan RSI (1s)',
+      label: `Medyan RSI (${intervalLabel(INTERVAL)})`,
       value: formatNumber(b.medianRsi, 1),
       hint: b.medianRsi == null ? '' : b.medianRsi >= 60 ? 'Piyasa ısınmış' : b.medianRsi <= 40 ? 'Piyasa zayıf' : 'Nötr bölge',
     },

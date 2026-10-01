@@ -2,6 +2,8 @@ import type { OIPeriod, ScannerInterval } from '../api/types'
 
 export const SCANNER_INTERVALS: readonly ScannerInterval[] = ['15m', '1h', '4h', '1d', '1w']
 export const OI_PERIODS: readonly OIPeriod[] = SCANNER_INTERVALS
+/** Binance Alpha tokens are too young for weekly candles to say anything. */
+export const ALPHA_SCANNER_INTERVALS: readonly ScannerInterval[] = ['15m', '1h', '4h', '1d']
 
 const MINUTES: Record<ScannerInterval, number> = {
   '15m': 15,

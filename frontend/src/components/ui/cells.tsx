@@ -29,6 +29,18 @@ export function SymbolCell({ symbol, base }: { symbol: string; base: string }) {
   )
 }
 
+/** A Binance Alpha token: its ticker and chain, with the full name on hover. Alpha has no detail page. */
+export function AlphaSymbolCell({ base, name, chain }: { base: string; name: string; chain: string }) {
+  return (
+    <span className={styles.symbolCell} title={`${name} · ${chain}`}>
+      <span className={styles.symbol}>
+        <span className={styles.base}>{base}</span>
+        <span className={styles.quote}>{chain}</span>
+      </span>
+    </span>
+  )
+}
+
 export function PctCell({ value, digits = 2 }: { value: number | null | undefined; digits?: number }) {
   const tone = toneOf(value)
   return <span className={`num ${tone === 'neutral' ? '' : tone}`}>{formatPct(value, digits)}</span>

@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
+import { useMarket, type Market } from '../app/market'
 import { apiGet } from './client'
 import type {
   CoinDetailResponse,
@@ -11,7 +12,7 @@ import type {
 } from './types'
 
 export const queryKeys = {
-  scanner: (interval: ScannerInterval) => ['scanner', interval] as const,
+  scanner: (interval: ScannerInterval, market: Market = 'futures') => ['scanner', market, interval] as const,
   funding: () => ['funding'] as const,
   openInterest: (period: OIPeriod) => ['open-interest', period] as const,
   coin: (symbol: string) => ['coin', symbol] as const,
@@ -19,10 +20,13 @@ export const queryKeys = {
 
 const MINUTE = 60_000
 
+/** Scanner of the current section's market: futures, or Binance Alpha under /web3. */
 export function useScanner(interval: ScannerInterval) {
+  const market = useMarket()
   return useQuery({
-    queryKey: queryKeys.scanner(interval),
-    queryFn: ({ signal }) => apiGet<ScannerResponse>('/scanner', { interval }, signal),
+    queryKey: queryKeys.scanner(interval, market),
+    queryFn: ({ signal }) =>
+      apiGet<ScannerResponse>(market === 'alpha' ? '/alpha/scanner' : '/scanner', { interval }, signal),
     refetchInterval: interval === '15m' ? MINUTE : 2 * MINUTE,
     placeholderData: keepPreviousData,
   })

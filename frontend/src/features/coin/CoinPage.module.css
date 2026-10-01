@@ -173,3 +173,22 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Phones: a narrower label column so two or three timeframes fit next to it. */
+@media (max-width: 767px) {
+  .matrix {
+    min-width: 600px;
+  }
+
+  .matrix th,
+  .matrix td {
+    padding: 9px 10px;
+  }
+
+  .matrix thead th:first-child,
+  .matrix tbody th {
+    width: 128px;
+    white-space: normal;
+    box-shadow: inset -1px 0 0 var(--border);
+  }
+}
