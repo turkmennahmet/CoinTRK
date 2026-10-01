@@ -92,3 +92,91 @@ def test_revalidator_serves_stale_value_and_refreshes_in_background():
     assert asyncio.run(scenario()) == ["value 1", "value 1", "value 1", "value 2"]
     assert calls == ["request-client", "background-client"]
     assert sessions == 1
+
+
+def test_concurrent_loads_of_a_key_share_one_call():
+    cache: TTLCache[int] = TTLCache()
+    calls = 0
+
+    async def loader() -> int:
+        nonlocal calls
+        calls += 1
+        await asyncio.sleep(0.01)
+        return 42
+
+    async def run() -> list[int]:
+        return await asyncio.gather(*(cache.get_or_load("k", 60, loader) for _ in range(10)))
+
+    assert asyncio.run(run()) == [42] * 10
+    assert calls == 1
+
+
+def test_a_failed_shared_load_fails_every_waiter_and_is_retried_next_time():
+    cache: TTLCache[int] = TTLCache()
+    calls = 0
+
+    async def loader() -> int:
+        nonlocal calls
+        calls += 1
+        await asyncio.sleep(0.01)
+        if calls == 1:
+            raise RuntimeError("upstream down")
+        return 7
+
+    async def run() -> tuple[list[object], int]:
+        first = await asyncio.gather(
+            *(cache.get_or_load("k", 60, loader) for _ in range(3)), return_exceptions=True
+        )
+        return first, await cache.get_or_load("k", 60, loader)
+
+    first, retried = asyncio.run(run())
+    assert all(isinstance(r, RuntimeError) for r in first)
+    assert retried == 7
+    assert calls == 2
+
+
+def test_waiter_loads_itself_when_the_loading_caller_is_cancelled():
+    cache: TTLCache[int] = TTLCache()
+    calls = 0
+
+    async def loader() -> int:
+        nonlocal calls
+        calls += 1
+        await asyncio.sleep(0.05)
+        return calls
+
+    async def run() -> int:
+        leader = asyncio.create_task(cache.get_or_load("k", 60, loader))
+        await asyncio.sleep(0)
+        waiter = asyncio.create_task(cache.get_or_load("k", 60, loader))
+        await asyncio.sleep(0.01)
+        leader.cancel()
+        return await waiter
+
+    assert asyncio.run(run()) == 2
+    assert calls == 2
+
+
+def test_revalidator_cold_requests_share_one_load():
+    cache: TTLCache[object] = TTLCache()
+
+    @asynccontextmanager
+    async def session() -> AsyncIterator[str]:
+        yield "background-client"
+
+    revalidator: Revalidator[str] = Revalidator(cache, session)
+    calls = 0
+
+    async def load(client: str) -> str:
+        nonlocal calls
+        calls += 1
+        await asyncio.sleep(0.01)
+        return "scan"
+
+    async def run() -> list[str]:
+        return await asyncio.gather(
+            *(revalidator.get("k", 10, 100, load, "request-client") for _ in range(10))
+        )
+
+    assert asyncio.run(run()) == ["scan"] * 10
+    assert calls == 1

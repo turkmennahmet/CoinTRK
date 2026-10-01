@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import math
 import time
 from collections.abc import AsyncIterator, Callable
@@ -212,3 +213,24 @@ def test_coin_endpoint_unknown_symbol():
     res = make_client(fake_binance).get("/api/coin/NOPEUSDT")
     assert res.status_code == 404
     assert res.json()["code"] == "not_found"
+
+
+def test_concurrent_cold_requests_run_one_scan():
+    kline_requests = 0
+
+    def counting(request: httpx.Request) -> httpx.Response:
+        nonlocal kline_requests
+        if request.url.path == "/fapi/v1/klines":
+            kline_requests += 1
+        return fake_binance(request)
+
+    app = make_client(counting).app
+
+    async def burst() -> list[int]:
+        transport = httpx.ASGITransport(app=app)
+        async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+            responses = await asyncio.gather(*(client.get("/api/scanner?interval=4h") for _ in range(10)))
+        return [r.status_code for r in responses]
+
+    assert asyncio.run(burst()) == [200] * 10
+    assert kline_requests == len(SYMBOLS)  # one scan, not ten

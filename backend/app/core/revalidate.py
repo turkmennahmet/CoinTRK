@@ -53,9 +53,14 @@ class Revalidator[C]:
             if not fresh:
                 self._refresh_in_background(key, ttl_s, stale_s, load)
             return value  # type: ignore[return-value]
-        loaded = await load(client)
-        self._cache.set(key, loaded, ttl_s, stale_s)
-        return loaded
+
+        async def load_and_store() -> T:
+            loaded = await load(client)
+            self._cache.set(key, loaded, ttl_s, stale_s)
+            return loaded
+
+        # Concurrent requests on a cold cache share one load (one scan, not one per request).
+        return await self._cache.load_once(key, load_and_store)  # type: ignore[return-value]
 
     def _refresh_in_background[T](
         self, key: Hashable, ttl_s: float, stale_s: float, load: Callable[[C], Awaitable[T]]
