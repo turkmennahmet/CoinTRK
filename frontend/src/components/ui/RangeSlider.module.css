@@ -1,0 +1,160 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 240px;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.label {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.values {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Same height as the neighbouring selects so the filter bar stays aligned. */
+.slider {
+  position: relative;
+  height: 38px;
+}
+
+.track {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  transform: translateY(-50%);
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--accent);
+}
+
+/* Both inputs span the track; only their thumbs take pointer events. */
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: none;
+  pointer-events: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input:focus {
+  outline: none;
+}
+
+.input::-webkit-slider-runnable-track {
+  height: 100%;
+  background: none;
+}
+
+.input::-moz-range-track {
+  background: none;
+}
+
+.input::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  margin-top: 10px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  cursor: grab;
+  pointer-events: auto;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: transform 0.12s ease;
+}
+
+.input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  cursor: grab;
+  pointer-events: auto;
+  transition: transform 0.12s ease;
+}
+
+.input:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+.input:active::-moz-range-thumb {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+.input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.input:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.filter {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.apply {
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apply:disabled {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-faint);
+  cursor: default;
+}
+
+@media (max-width: 767px) {
+  .field {
+    flex: 1;
+    width: auto;
+  }
+
+  .filter {
+    width: 100%;
+  }
+}

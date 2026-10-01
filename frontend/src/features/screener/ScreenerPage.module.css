@@ -1,0 +1,36 @@
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.summary strong {
+  color: var(--text);
+}
+
+.reset {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reset:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.signals {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}

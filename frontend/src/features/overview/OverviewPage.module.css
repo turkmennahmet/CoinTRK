@@ -1,0 +1,138 @@
+.breadth {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.statLabel {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.statHint {
+  color: var(--text-muted);
+  font-size: 12px;
+  min-height: 1.45em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.cardHeader h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.cardHeader p {
+  margin: 2px 0 0;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.cardLink {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cardLink:hover {
+  color: var(--accent);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  border-top: 1px solid var(--border);
+}
+
+.item:first-child {
+  border-top: none;
+}
+
+.itemValue {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cardEmpty {
+  margin: auto 0;
+  padding: 24px 0;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .breadth {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .breadth {
+    gap: 8px;
+  }
+
+  .stat {
+    padding: 12px;
+  }
+
+  .statValue {
+    font-size: 20px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

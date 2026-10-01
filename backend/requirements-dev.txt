@@ -1,0 +1,5 @@
+-r ../requirements.txt
+uvicorn[standard]>=0.37
+pytest>=8.4
+ruff>=0.13
+mypy>=1.18

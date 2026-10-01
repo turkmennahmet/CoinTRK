@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Env / tooling
+.env
+.env.*
+!.env.example
+.vercel/
+.DS_Store
+*.log
